@@ -15,6 +15,8 @@ from models.user import User
                  strict_slashes=False)
 def get_places_by_city(city_id):
     """Retrieve the list of all Place objects of a City."""
+    if city_id is None:
+        abort(404)
     city = storage.get(City, city_id)
     if city is None:
         abort(404)
@@ -41,7 +43,7 @@ def delete_place(place_id):
         abort(404)
     storage.delete(place)
     storage.save()
-    return jsonify({})
+    return jsonify({}), 200
 
 
 @app_views.route('/cities/<city_id>/places',
@@ -49,6 +51,8 @@ def delete_place(place_id):
                  strict_slashes=False)
 def create_place(city_id):
     """Create a new Place."""
+    if city_id is None:
+        abort(404)
     city = storage.get(City, city_id)
     if city is None:
         abort(404)
