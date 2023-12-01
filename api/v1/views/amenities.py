@@ -20,7 +20,7 @@ def get_amenity():
 def get_amenity_id(amenity_id):
     """
     Retrieves a Amenity object: GET /api/v1/amenities/<amenity_id>
-    If the amenity_id is not linked to any City object, raise a 404 error
+    If the amenity_id is not linked to any Amenity object, raise a 404 error
     """
     amenity = storage.get(Amenity, amenity_id)
     if amenity is None:
