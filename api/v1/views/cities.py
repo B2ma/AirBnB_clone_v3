@@ -13,12 +13,12 @@ from models.city import City
                  strict_slashes=False)
 def get_city_state(state_id):
     """Retrieves the list of all City objects of a State"""
-    list_city = []
-    for city in storage.all(City).values():
-        if state_id == city.id:
-            list_city.append(city.to_dict())
-    if not list_city:
+    if state_id is None:
         abort(404)
+    state = storage.get(State, state_id)
+    if state is None:
+        abort(404)
+    list_city = [city.to_dict() for city in state.cities]
     return jsonify(list_city)
 
 
@@ -51,6 +51,8 @@ def delete_city(city_id):
                  strict_slashes=False)
 def create_city(state_id):
     """Creates a City"""
+    if state_id is None:
+        abort(404)
     state = storage.get(State, state_id)
     if state is None:
         abort(404)
@@ -60,7 +62,7 @@ def create_city(state_id):
         abort(400, 'Not a JSON')
     if 'name' not in city_data:
         abort(400, 'Missing name')
-    new_city = City(name=city_data['name'], state_id=state.id)
+    new_city = City(name=city_data.get('name'), state_id=state.id)
     new_city.save()
     return jsonify(new_city.to_dict()), 201
 
