@@ -9,7 +9,7 @@ from models.state import State
 from models.city import City
 
 
-@app_views.route('/api/v1/states/<state_id>/cities', methods=['GET'],
+@app_views.route('/states/<state_id>/cities', methods=['GET'],
                  strict_slashes=False)
 def get_city_state(state_id):
     """Retrieves the list of all City objects of a State"""
@@ -22,7 +22,7 @@ def get_city_state(state_id):
     return jsonify(list_city)
 
 
-@app_views.route('/api/v1/cities/<city_id>', methods=['GET'],
+@app_views.route('/cities/<city_id>', methods=['GET'],
                  strict_slashes=False)
 def get_city(city_id):
     """
@@ -35,7 +35,7 @@ def get_city(city_id):
     return jsonify(city.to_dict())
 
 
-@app_views.route('/api/v1/cities/<city_id>', methods=['DELETE'],
+@app_views.route('/cities/<city_id>', methods=['DELETE'],
                  strict_slashes=False)
 def delete_city(city_id):
     """Deletes a City object"""
@@ -47,7 +47,7 @@ def delete_city(city_id):
     return jsonify({}), 200
 
 
-@app_views.route('/api/v1/states/<state_id>/cities', methods=['POST'],
+@app_views.route('/states/<state_id>/cities', methods=['POST'],
                  strict_slashes=False)
 def create_city(state_id):
     """Creates a City"""
@@ -65,7 +65,7 @@ def create_city(state_id):
     return jsonify(new_city.to_dict()), 201
 
 
-@app_views.route('/api/v1/cities/<city_id>', methods=['PUT'],
+@app_views.route('/cities/<city_id>', methods=['PUT'],
                  strict_slashes=False)
 def update_city(city_id):
     """Updates a City object"""
@@ -76,7 +76,7 @@ def update_city(city_id):
     city_data = request.get_json()
     if city_data is None:
         abort(400, 'Not a JSON')
-    ignore_keys = ['id', 'email', 'created_at', 'updated_at']
+    ignore_keys = ['id', 'state_id', 'created_at', 'updated_at']
     for key, value in city_data.items():
         if key not in ignore_keys:
             setattr(city, key, value)
