@@ -106,41 +106,34 @@ def places_search():
     Retrieves all Place objects depending of the JSON in the
     body of the request
     """
-    if not request.is_json:
-        abort(400, 'Not a JSON')
+    try:
+        data = request.get_json()
+    except Exception:
+        abort(400, "Not a JSON")
 
-    data = request.get_json()
-
-    states = data.get('states', [])
-    cities = data.get('cities', [])
-    amenities = data.get('amenities', [])
+    states = data.get("states", [])
+    cities = data.get("cities", [])
+    amenities = data.get("amenities", [])
 
     if not states and not cities and not amenities:
         places = storage.all(Place).values()
-        return jsonify([place.to_dict() for place in places])
+    else:
+        places = []
+        for state_id in states:
+            state = storage.get(State, state_id)
+            if state:
+                places.extend(state.places)
 
-    place_ids = set()
+        for city_id in cities:
+            city = storage.get(City, city_id)
+            if city:
+                places.extend(city.places)
 
-    for state_id in states:
-        state = storage.get(State, state_id)
-        if state:
-            for city in state.cities:
-                place_ids.update([place.id for place in city.places])
+        if amenities:
+            places = [place for place in places if
+                      all(amenity.id in place.amenities for
+                          amenity_id in amenities)]
 
-    for city_id in cities:
-        city = storage.get(City, city_id)
-        if city:
-            place_ids.update([place.id for place in city.places])
+    places_json = [place.to_dict() for place in places]
 
-    if amenities:
-        filtered_place_ids = set()
-        for place_id in place_ids:
-            place = storage.get(Place, place_id)
-            if place and all(amenity_id in [amen_obj.id for amen_obj in
-                             place.amenities] for amenity_id in amenities):
-                filtered_place_ids.add(place_id)
-        place_ids = filtered_place_ids
-
-    places = [storage.get(Place, place_id).to_dict() for place_id in place_ids]
-
-    return jsonify(places)
+    return jsonify(places_json)
