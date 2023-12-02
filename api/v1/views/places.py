@@ -120,12 +120,13 @@ def places_search():
             if state:
                 places.update(state.places)
 
-        for city_id in set(cities + [city_id for state_id in states
-                           for city_id in
-                           storage.get(State, state_id).cities]):
-            city = storage.get(City, city_id)
-            if city:
-                places.update(city.places)
+        for state_id in states:
+            for city_id in set(cities + [city_id for state_id in states
+                               for city_id in
+                               storage.get(State, state_id).cities]):
+                city = storage.get(City, city_id)
+                if city:
+                    places.update(city.places)
 
         places = [place for place in places if
                   all(amenity_id in place.amenities_ids
