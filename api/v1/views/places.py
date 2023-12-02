@@ -116,13 +116,12 @@ def places_search():
         for state_id in states:
             state = storage.get(State, state_id)
             if state is not None:
-                places.extend(state.cities)
+                for city in state.cities:
+                    places.extend(state.cities)
         for city_id in cities:
             city = storage.get(City, city_id)
             if city is not None:
-                places.append(city)
-        places = [place.places for place in places]
-        places = [place for place_list in places for place in place_list]
+                places.extend(city.places)
     else:
         places = storage.all(Place).values()
     if amenities:
