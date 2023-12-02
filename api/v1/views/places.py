@@ -100,36 +100,36 @@ def update_place(place_id):
     return jsonify(place.to_dict()), 200
 
 
-@app_views.route('/places.py', methods=['POST'], strict_slashes=False)
+@app_views.route('/places_search', methods=['POST'], strict_slashes=False)
 def places_search():
     """Retrieves all Place objects depending of the JSON
     in the body of the request
     """
     data = request.get_json()
-    if data is None:
-        abort(400, 'Not a JSON')
-    states = data.get('states', [])
-    cities = data.get('cities', [])
-    amenities = data.get('amenities', [])
-
-    if not states and not cities and not amenities:
+    if not data:
         places = storage.all(Place).values()
     else:
         places = set()
 
-    for state_id in states:
-        state = storage.get(State, state_id)
-        if state:
-            places.update(state.places)
-    for city_id in set(cities + [city_id for state in states
-                       for city in storage.get(State, state_id).cities]):
-        city = storage.get(City, city_id)
-        if city:
-            places.update(city.places)
+        states = data.get('states', [])
+        cities = data.get('cities', [])
+        amenities = data.get('amenities', [])
 
-    places = [place for place in places if
-              all(amenity_id in place.amenities_ids
-                  for amenity_id in amenities)]
+        for state_id in states:
+            state = storage.get(State, state_id)
+            if state:
+                places.update(state.places)
+
+        for city_id in set(cities + [city_id for state_id in states
+                           for city_id in
+                           storage.get(State, state_id).cities]):
+            city = storage.get(City, city_id)
+            if city:
+                places.update(city.places)
+
+        places = [place for place in places if
+                  all(amenity_id in place.amenities_ids
+                      for amenity_id in amenities)]
 
     res = [place.to_dict() for place in places]
     return jsonify(res)
