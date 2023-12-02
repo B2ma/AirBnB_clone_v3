@@ -102,35 +102,32 @@ def update_place(place_id):
 
 @app_views.route('/places_search', methods=['POST'], strict_slashes=False)
 def places_search():
-    """Retrieves all Place objects depending of the JSON
-    in the body of the request
-    """
+    """Retrieve all Place objects based on the JSON in the request body."""
     data = request.get_json()
-    if not data:
-        places = storage.all(Place).values()
-    else:
-        places = set()
+    if data is None or not data:
+        abort(400, 'Not a JSON')
 
-        states = data.get('states', [])
-        cities = data.get('cities', [])
-        amenities = data.get('amenities', [])
+    states = data.get('states', [])
+    cities = data.get('cities', [])
+    amenities = data.get('amenities', [])
 
+    places = []
+    if states or cities:
         for state_id in states:
             state = storage.get(State, state_id)
-            if state:
-                places.update(state.places)
+            if state is not None:
+                places.extend(state.cities)
+        for city_id in cities:
+            city = storage.get(City, city_id)
+            if city is not None:
+                places.append(city)
+        places = [place.places for place in places]
+        places = [place for place_list in places for place in place_list]
+    else:
+        places = storage.all(Place).values()
+    if amenities:
+        places = [place for place in places if all(amenity in
+                                                   place.amenities
+                                                   for amenity in amenities)]
 
-        for state_id in states:
-            for city_id in set(cities + [city_id for state_id in states
-                               for city_id in
-                               storage.get(State, state_id).cities]):
-                city = storage.get(City, city_id)
-                if city:
-                    places.update(city.places)
-
-        places = [place for place in places if
-                  all(amenity_id in place.amenities_ids
-                      for amenity_id in amenities)]
-
-    res = [place.to_dict() for place in places]
-    return jsonify(res)
+    return jsonify([place.to_dict() for place in places])
