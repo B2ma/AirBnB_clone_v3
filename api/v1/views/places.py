@@ -111,9 +111,6 @@ def places_search():
 
     data = request.get_json()
 
-    if data is None or not data:
-        abort(400, 'Not a JSON')
-
     states = data.get('states', [])
     cities = data.get('cities', [])
     amenities = data.get('amenities', [])
