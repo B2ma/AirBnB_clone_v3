@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 """
 Module for the view of the link between Place and Amenity objects.
 """
