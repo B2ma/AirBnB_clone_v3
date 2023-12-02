@@ -4,7 +4,10 @@ API endpoints for Review objects related to Places.
 """
 from flask import abort, jsonify, request
 from api.v1.views import app_views
-from models import storage, Place, User, Review
+from models import storage
+from models.place import Place
+from models.user import User
+from models.review import Review
 
 
 @app_views.route('/places/<place_id>/reviews',
@@ -12,6 +15,8 @@ from models import storage, Place, User, Review
                  strict_slashes=False)
 def get_reviews_by_place(place_id):
     """Retrieve the list of all Review objects of a Place."""
+    if place_id is None:
+        abort(404)
     place = storage.get(Place, place_id)
     if place is None:
         abort(404)
@@ -38,7 +43,7 @@ def delete_review(review_id):
         abort(404)
     storage.delete(review)
     storage.save()
-    return jsonify({})
+    return jsonify({}), 200
 
 
 @app_views.route('/places/<place_id>/reviews',
@@ -46,6 +51,8 @@ def delete_review(review_id):
                  strict_slashes=False)
 def create_review(place_id):
     """Create a new Review."""
+    if place_id is None:
+        abort(404)
     place = storage.get(Place, place_id)
     if place is None:
         abort(404)
